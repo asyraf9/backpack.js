@@ -1,39 +1,74 @@
 var root = this;
 
-(function(root){
+(function(root, $, _, Backbone){
   "use strict";
 
-  var __modules = {};
-
-  function Backpack(module, options) {
-    options = options || {};
-
-    if (!(this instanceof Backpack))
-      return new Backpack(module, options);
-
-    if (__modules.hasOwnProperty(module))
-      return new __modules[module](options);
-  }
+  if (typeof Backpack === 'undefined')
+    var Backpack = {};
 
 
-  _.extend(Backpack, Backbone.Events, {
-    __slice: Array.prototype.slice,
-    __hasProp: Object.prototype.hasOwnProperty,
-    __extends: function(child, parent) { for (var key in parent) { if (Backpack.__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; },
+  _.extend(Backpack, Backbone.Events, (function(){
 
-    add: function (name, module) {
-      if (!(__modules.hasOwnProperty(name))) {
-        __modules[name] = module;
-        return true;
+    // Private
+    // -------
+    var _modules = {};
+
+    // Public
+    // -------
+    return {
+
+      __slice:   Array.prototype.slice,
+      __hasProp: Object.prototype.hasOwnProperty,
+      __extends: function(child, parent) { 
+        _.each(parent, function(val, key){
+          if (Backpack.__hasProp.call(parent, key)) child[key] = parent[key];
+        });
+        function ctor() { this.constructor = child; } 
+        ctor.prototype = parent.prototype; 
+        child.prototype = new ctor; 
+        child.__super__ = parent.prototype; 
+        return child; 
+      },
+
+      add: function() {
+        var name   = _.initial(arguments),
+            module = _.last(arguments),
+            newModule = !(_modules.hasOwnProperty(name)) &&
+                        !(Backpack.hasOwnProperty(name));
+        
+        if (newModule) {
+          // store in _modules for 
+          // reference
+          _modules[name] = module;
+          Backpack[name] = module;
+          return true;
+        }
+        return false;
+      },
+
+      modules: function() {
+        var name = _.first(arguments);
+
+        // return the named module
+        if (_.isString(name)) 
+          return Backpack[name];
+
+        // return array containing
+        // the named modules
+        if (_.isArray(name)) {
+          var _ref = [];
+          _.each(name, function(module){
+            _ref.push(module);
+          });
+          return _ref;
+        }
+
+        // return object containing
+        // all modules
+        return _modules;
       }
-      return false;
-    },
-
-    modules: (function() {
-      return __modules;
-    })()
-  });
-
+    }
+  })());
 
   // Support Browser and Node environments.
   if (typeof exports !== 'undefined') {
@@ -45,7 +80,4 @@ var root = this;
     root['Backpack'] = Backpack;
   }
 
-
-  return Backpack;
-
-})(root);
+})(root, $, _, Backbone)
