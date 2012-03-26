@@ -1,1 +1,1 @@
-module.exports = require('./lib/Backpack-bundle');
+module.exports = require('./src/backpack.js');
